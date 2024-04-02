@@ -1,6 +1,5 @@
 let scrapeApp = document.getElementById('scrapeApp');
 
-// Function to scrape data from food delivery web app
 function scrapeDataFromPage() {
     const results = [];
     // Use the current page's URL
@@ -10,31 +9,37 @@ function scrapeDataFromPage() {
     // Assuming you're already on the target page and want to scrape data from it
     const cards = document.querySelectorAll('[data-testid="store-card"]');
 
+    // Regex patterns
+    const ratingRegex = /\b\d\.\d\b/; // Matches a single digit, a period, and another single digit
+    const deliveryTimeRegex = /\d{2}–\d{2} min/; // Matches the delivery time format "15–30 min"
+
     cards.forEach(card => {
-        // Extract the relevant data as before
-        const name = card?.querySelector('h3')?.innerText?.trim();
-        // Navigate the DOM to find the rating and delivery time as in your Python script
-        const outerDiv = card?.parentElement; // Navigating up the DOM
-        const innerDiv = outerDiv?.children[1]?.children[1]; // Then finding the specific child elements
-        const rating = innerDiv?.children[0];
-        let ratingText = null;
-        if(rating?.children?.length >= 2) {
-            ratingText = rating?.children[2]?.innerText.trim();
-        } else {
-            console.log("rating does not exist");
-        }
-        const deliveryTime = innerDiv?.children[1]?.children[0];
-        const deliveryTimeText = deliveryTime?.querySelector('span')?.innerText.trim();
+        // Extract the restaurant name directly
+        const name = card.querySelector('h3')?.innerText.trim();
+
+        // Navigate to find rating and delivery time without relying on class names
+        const containerDiv = card.parentElement; // Ascend to the parent that contains all info
+        
+        // Assuming the rating and delivery time are contained within the same parent div
+        // and are always in a predictable order
+        const infoText = containerDiv.innerText;
+
+        // Apply regex to extract rating and delivery time
+        const ratingMatch = infoText.match(ratingRegex);
+        const deliveryTimeMatch = infoText.match(deliveryTimeRegex);
+
+        // Extract the first match (if any) as the desired value
+        const ratingText = ratingMatch ? ratingMatch[0] : 'No rating info';
+        const deliveryTimeText = deliveryTimeMatch ? deliveryTimeMatch[0] : 'No delivery time info';
 
         results.push({
-                name,
-                ratingText,
-                deliveryTimeText
-            });
+            name,
+            rating: ratingText,
+            deliveryTime: deliveryTimeText
+        });
     });
 
-    console.log("displaying results...");
-    // Log results for debugging
+    console.log("Displaying results...");
     console.log(results);
 }
 
