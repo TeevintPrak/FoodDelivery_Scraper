@@ -47,6 +47,16 @@ function scrapeDataFromPage() {
     return results;
 }
 
+function generateList(arg) {
+    let items = "";
+    for(let i = 0; i < arg.length; i++) {
+        items += '<li>${arg[i]}</li>';
+    }
+    return items;
+}
+
+document.querySelector("main").innerHTML = '<ul>${generateList(array)}</ul>';
+
 scrapeApp.addEventListener("click", async () => {
     //Get current active tab
     let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
