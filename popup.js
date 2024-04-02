@@ -7,15 +7,17 @@ function scrapeDataFromPage() {
     console.log('Current URL:', url);
 
     // Assuming you're already on the target page and want to scrape data from it
-    const cards = document.querySelectorAll('[data-testid="store-card"]');
+    const cards = document.querySelectorAll('[class="ak bb"]');
 
     // Regex patterns
     const ratingRegex = /\b\d\.\d\b/; // Matches a single digit, a period, and another single digit
     const deliveryTimeRegex = /\d{2}–\d{2} min/; // Matches the delivery time format "15–30 min"
 
+    console.log("# of cards" + cards.length);
+
     cards.forEach(card => {
         // Extract the restaurant name directly
-        const name = card.querySelector('h3')?.innerText.trim();
+        const name = card.children[0].querySelector('h3')?.innerText.trim();
 
         // Navigate to find rating and delivery time without relying on class names
         const containerDiv = card.parentElement; // Ascend to the parent that contains all info
@@ -41,6 +43,8 @@ function scrapeDataFromPage() {
 
     console.log("Displaying results...");
     console.log(results);
+
+    return results;
 }
 
 scrapeApp.addEventListener("click", async () => {
