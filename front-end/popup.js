@@ -1,21 +1,39 @@
 // popup.js
 
-document.getElementById('scrapeApp').addEventListener('click', async () => {
-    let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+function generateList(arg) {
+    let items = "";
+    for (let i = 0; i < arg.length; i++) {
+        items += `<li>${arg[i]}</li>`;
+    }
+    return items;
+}
 
-    chrome.scripting.executeScript({
-        target: {tabId: tab.id},
-        function: getCardsData,
-    }, (injectionResults) => {
-        for (const frameResult of injectionResults) {
+document.getElementById('scrapeApp').addEventListener('click', async () => {
+    // Obtain the active tabId
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        const tab = tabs[0];
+        chrome.scripting.executeScript({
+            target: {tabId: tab.id},
+            function: getCardsData,
+        }, (injectionResults) => {
+            if (chrome.runtime.lastError || !injectionResults || !injectionResults.length) {
+                console.error('Script injection failed:', chrome.runtime.lastError);
+                return;
+            }
             chrome.runtime.sendMessage({
                 action: "scrapeData",
-                cards: frameResult.result
+                cards: injectionResults[0].result
             }, response => {
-                //console.log('Scraped Names:', response.storeNames);
-                updateUI(response.storeNames);
+                if (chrome.runtime.lastError) {
+                    console.error('Error in sendMessage:', chrome.runtime.lastError);
+                    return;
+                }
+                if (response && response.storeNames) {
+                    console.log('lmao');
+                    document.querySelector("main").innerHTML = `<ul>${generateList(response.storeNames)}</ul>`;
+                }
             });
-        }
+        });
     });
 });
 
@@ -24,15 +42,4 @@ function getCardsData() {
         url: card.getAttribute('href')
     }));
     return cards;
-}
-
-function updateUI(storeNames) {
-    const main = document.querySelector('main');
-    main.innerHTML = ''; // Clear previous results
-    for (store in storeNames) {
-        console.log(store);
-        const div = document.createElement('h1');
-        div.textContent = store;
-        main.appendChild(div);
-    }
 }
