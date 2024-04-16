@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Food Delivery Scraper",
+  "description": "Scrape & Summarize Food Delivery Data",
+  "version": "1.0",
+  "background": {
+      "service_worker": "background.js"
+  },
+  "action": {
+      "default_popup": "popup.html"
+  },
+  "permissions": [
+      "activeTab",
+      "scripting"
+  ],
+  "host_permissions": [
+      "https://www.ubereats.com/*"
+  ],
+  "content_scripts": [
+      {
+          "matches": ["https://www.ubereats.com/*"], 
+          "js": ["popup.js"],
+          "run_at": "document_idle"
+      }
+  ]
+}
