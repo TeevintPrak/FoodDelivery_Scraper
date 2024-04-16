@@ -1,7 +1,3 @@
-// background.js
-
-let document = ""; 
-
 function parseLink(URL) {
     const baseURL = "https://www.ubereats.com";
     return baseURL + URL;
@@ -21,69 +17,32 @@ async function fetchData(links, callback) {
     });
 }
 
-// function scrapeMenuData(docs) {
-//     for (const html in docs) {
-//         const tempDiv = document.createElement('div');
-//         tempDiv.innerHTML = html;
-//         const storeTitleElement = tempDiv.querySelector('h1[data-testid="store-title-summary"]');
-//         if (storeTitleElement) {
-//             const storeTitle = storeTitleElement.textContent.trim();
-//             console.log('Store Title:', storeTitle);
-//             return storeTitle;
-//         } else {
-//             console.log('Store Title element not found');
-//             return null;
-//         }
-//     }
-// }
-
-function scrapeMenuData(docs) {
-    let storeTitles = []; // Array to store all found store titles
-
-    for (const html of docs) { // Correct iteration over HTML contents
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = html; // Set innerHTML to the HTML string
-        const storeTitleElement = tempDiv.querySelector('h1[data-testid="store-title-summary"]');
-
-        if (storeTitleElement) {
-            const storeTitle = storeTitleElement.textContent.trim();
-            console.log('Store Title:', storeTitle);
-            storeTitles.push(storeTitle); // Add found title to the array
-        } else {
-            console.log('Store Title element not found');
-        }
-    }
-
-    return storeTitles; // Return all found titles
-}
-
-
-async function scrapeLinks(cards) {
-    const storeNames = [];
-    const links = [];
-
-    for (const card of cards) {
-        links.push(parseLink(card.url));
-    }
+async function scrapeLinks(cards, sendResponse) {
+    const links = cards.map(card => parseLink(card.url));
 
     try {
         fetchData(links.slice(0, 2), function(docs) {
-            storeNames = scrapeMenuData(docs);
+            /* Send HTML documents to content script for processing
+            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                chrome.tabs.sendMessage(tabs[0].id, {action: "processDocs", docs: docs}, function(response) {
+                    sendResponse({storeNames: response.storeNames});
+                });
+            });*/
+            return docs;
         });
     } catch (error) {
         console.error('Error scraping data', error);
     }
-    return storeNames;
+    return true; // to keep the message channel open for asynchronous response
 }
 
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
         if (request.action === "scrapeData") {
-            document = request.html;
-            scrapeLinks(request.cards).then(storeNames => {
+            scrapeLinks(request.cards, sendResponse).then(storeNames => {
                 sendResponse({storeNames: storeNames});
             });
-            return true;
+            return true; // to keep the message channel open
         }
     }
 );

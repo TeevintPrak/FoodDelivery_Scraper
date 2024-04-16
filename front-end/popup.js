@@ -10,11 +10,10 @@ document.getElementById('scrapeApp').addEventListener('click', async () => {
         for (const frameResult of injectionResults) {
             chrome.runtime.sendMessage({
                 action: "scrapeData",
-                cards: frameResult.result,
-                html: document
+                cards: frameResult.result
             }, response => {
-                console.log('Scraped Names:', response.storeNames);
-                //updateUI(response.storeNames);
+                //console.log('Scraped Names:', response.storeNames);
+                updateUI(response.storeNames);
             });
         }
     });
@@ -30,9 +29,10 @@ function getCardsData() {
 function updateUI(storeNames) {
     const main = document.querySelector('main');
     main.innerHTML = ''; // Clear previous results
-    storeNames.forEach(name => {
-        const div = document.createElement('div');
-        div.textContent = name;
+    for (store in storeNames) {
+        console.log(store);
+        const div = document.createElement('h1');
+        div.textContent = store;
         main.appendChild(div);
-    });
+    }
 }

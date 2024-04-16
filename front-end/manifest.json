@@ -19,7 +19,7 @@
   "content_scripts": [
       {
           "matches": ["https://www.ubereats.com/*"], 
-          "js": ["popup.js"],
+          "js": ["content_scripts.js"],
           "run_at": "document_idle"
       }
   ]
